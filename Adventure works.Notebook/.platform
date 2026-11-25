@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "Adventure works"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "503ecaed-4039-9617-43d8-c8384d33dd77"
+  }
+}
