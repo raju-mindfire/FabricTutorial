@@ -227,6 +227,14 @@ customer_orders = (
       )
 )
 
+new_customer_orders = (
+    jn.groupBy("Region", "CustomerID", "PersonID", "StoreID")
+      .agg(
+          F.count("SalesOrderID").alias("OrderCount"),
+          F.sum("SubTotal").cast("decimal(19,2)").alias("TotalSales"),
+      )
+)
+
 p = w.partitionBy("Region").orderBy(F.col("OrderCount").desc(), F.col("TotalSales").desc(), "CustomerID")
 
 res = (
