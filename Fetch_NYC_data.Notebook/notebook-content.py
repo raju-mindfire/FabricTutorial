@@ -50,11 +50,9 @@ from pyspark.sql.window import Window
 
 src = spark.read.parquet('Files/NYC_Yellow/File_2024-01.parquet')
 # src.cache()
-spark.catalog.clearCache()
-src.unpersist()
 display(src.count())
 display(src.count())
-src.explain()
+src.explain("formatted")
 
 # METADATA ********************
 
