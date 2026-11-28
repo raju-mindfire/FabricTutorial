@@ -1,0 +1,305 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "c72fd935-decb-99c4-43dc-c10821a794c1",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "start_ym": {
+              "value": "2024-01",
+              "type": "string"
+            },
+            "end_ym": {
+              "value": "@pipeline().parameters.end_ym",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_00_control",
+        "dependsOn": []
+      },
+      {
+        "type": "IfCondition",
+        "typeProperties": {
+          "expression": {
+            "value": "@equals(json(activity('nb_00_control').output.result.exitValue).has_new_data, true)",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "BinarySource",
+                  "formatSettings": {
+                    "type": "BinaryReadSettings"
+                  },
+                  "storeSettings": {
+                    "type": "HttpReadSettings",
+                    "requestMethod": "GET"
+                  },
+                  "datasetSettings": {
+                    "type": "Binary",
+                    "typeProperties": {
+                      "location": {
+                        "type": "HttpServerLocation",
+                        "relativeUrl": "misc/taxi_zone_lookup.csv"
+                      }
+                    },
+                    "externalReferences": {
+                      "connection": "83daf670-a77b-433f-aa07-ce5804d95910"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "BinarySink",
+                  "storeSettings": {
+                    "type": "LakehouseWriteSettings"
+                  },
+                  "datasetSettings": {
+                    "type": "Binary",
+                    "typeProperties": {
+                      "location": {
+                        "type": "LakehouseLocation",
+                        "folderPath": "raw/nyc_taxi/lookup",
+                        "fileName": "taxi_zone_lookup.csv"
+                      }
+                    },
+                    "connectionSettings": {
+                      "name": "lh_nyc_taxi",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "4f75d69a-ee79-879c-41e2-c4a8da9a5d0d",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Files"
+                        },
+                        "externalReferences": {
+                          "connection": "fe271d07-06b5-400b-8757-407191c4a745"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "cp_zone_lookup",
+              "dependsOn": []
+            },
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "BinarySource",
+                  "formatSettings": {
+                    "type": "BinaryReadSettings"
+                  },
+                  "storeSettings": {
+                    "type": "HttpReadSettings",
+                    "requestMethod": "GET"
+                  },
+                  "datasetSettings": {
+                    "type": "Binary",
+                    "typeProperties": {
+                      "location": {
+                        "type": "HttpServerLocation",
+                        "relativeUrl": "@json(activity('nb_00_control').output.result.exitValue).relative_url"
+                      }
+                    },
+                    "externalReferences": {
+                      "connection": "83daf670-a77b-433f-aa07-ce5804d95910"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "BinarySink",
+                  "storeSettings": {
+                    "type": "LakehouseWriteSettings"
+                  },
+                  "datasetSettings": {
+                    "type": "Binary",
+                    "typeProperties": {
+                      "location": {
+                        "type": "LakehouseLocation",
+                        "folderPath": "@json(activity('nb_00_control').output.result.exitValue).raw_folder",
+                        "fileName": "@json(activity('nb_00_control').output.result.exitValue).file_name"
+                      }
+                    },
+                    "connectionSettings": {
+                      "name": "lh_nyc_taxi",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "4f75d69a-ee79-879c-41e2-c4a8da9a5d0d",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Files"
+                        },
+                        "externalReferences": {
+                          "connection": "fe271d07-06b5-400b-8757-407191c4a745"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "cp_trip_data",
+              "dependsOn": [
+                {
+                  "activity": "cp_zone_lookup",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "e73a58f2-fbf0-9831-48cc-9dfe3a087095",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "year": {
+                    "value": "2024",
+                    "type": "string"
+                  },
+                  "month": {
+                    "value": "01",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "nb_01_bronze",
+              "dependsOn": [
+                {
+                  "activity": "cp_trip_data",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "af09f543-240a-bede-43fc-558f559d6c26",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "year": {
+                    "value": "2024",
+                    "type": "string"
+                  },
+                  "month": {
+                    "value": "01",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "nb_02_silver",
+              "dependsOn": [
+                {
+                  "activity": "nb_01_bronze",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "83dbfb69-eb7f-9da3-4a38-77a018f2f3da",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "year": {
+                    "value": "2024",
+                    "type": "string"
+                  },
+                  "month": {
+                    "value": "01",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "nb_03_gold",
+              "dependsOn": [
+                {
+                  "activity": "nb_02_silver",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            }
+          ],
+          "ifFalseActivities": []
+        },
+        "name": "chk_new_data",
+        "dependsOn": [
+          {
+            "activity": "nb_00_control",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "end_ym": {
+        "type": "string",
+        "defaultValue": "2024-02"
+      }
+    }
+  }
+}

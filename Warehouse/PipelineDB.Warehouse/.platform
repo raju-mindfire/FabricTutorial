@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Warehouse",
+    "displayName": "PipelineDB",
+    "description": ""
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ee6bb32e-22ec-8407-40f1-532bb147cd82"
+  }
+}
