@@ -6,6 +6,7 @@
         "typeProperties": {
           "source": {
             "type": "DataWarehouseSource",
+            "sqlReaderQuery": "SELECT * FROM dbo.PipelineControl WHERE IsActive = 1 ORDER BY LoadOrder",
             "partitionOption": "None",
             "queryTimeout": "02:00:00"
           },
@@ -45,6 +46,7 @@
       {
         "type": "ForEach",
         "typeProperties": {
+          "isSequential": true,
           "items": {
             "value": "@activity('Fetch Pipeline Rules').output.value",
             "type": "Expression"
@@ -59,7 +61,7 @@
                     "type": "Expression"
                   },
                   "Query": {
-                    "value": "@if(\n    and(\n        equals(toLower(trim(item().LoadType)), 'incremental'),\n        not(empty(item()?.LastWaterMark))\n    ),\n    concat('SELECT * FROM ', item().SourceSchema, '.', item().TableName,\n           ' WHERE ModifiedDate > ''', item().LastWaterMark, ''''),\n    concat('SELECT * FROM ', item().TableName)\n)",
+                    "value": "@if(and(equals(toLower(trim(item().LoadType)),'incremental'),not(equals(string(coalesce(item()?.LastWatermark,'')),'')),not(equals(coalesce(item()?.WatermarkColumn,''),''))),concat('SELECT * FROM [',item().SourceSchema,'].[',item().SourceTable,'] WHERE [',item().WatermarkColumn,'] > ''',string(item().LastWatermark),''''),concat('SELECT * FROM [',item().SourceSchema,'].[',item().SourceTable,']'))",
                     "type": "Expression"
                   },
                   "DestinationTable": {
