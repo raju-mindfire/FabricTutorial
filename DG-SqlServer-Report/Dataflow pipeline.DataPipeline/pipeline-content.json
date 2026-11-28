@@ -1,5 +1,89 @@
 {
   "properties": {
-    "activities": []
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "sqlReaderQuery": {
+              "value": "@pipeline().parameters.Query",
+              "type": "Expression"
+            },
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "database": "DataDB"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "e9d32cce-9218-450a-ba23-30e1ab84ea1a"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "LakehouseTableSink",
+            "tableActionOption": "Append",
+            "applyVOrder": false,
+            "enableTimestampNtz": false,
+            "datasetSettings": {
+              "type": "LakehouseTable",
+              "typeProperties": {
+                "table": {
+                  "value": "@pipeline().parameters.DestinationTable",
+                  "type": "Expression"
+                }
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "LH_Products",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "a27315af-e87a-a29e-4742-0b15b0d1d262",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Tables"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Copy data",
+        "dependsOn": []
+      }
+    ],
+    "parameters": {
+      "SourceDB": {
+        "type": "string"
+      },
+      "Query": {
+        "type": "string"
+      },
+      "DestinationTable": {
+        "type": "string"
+      }
+    }
   }
 }
